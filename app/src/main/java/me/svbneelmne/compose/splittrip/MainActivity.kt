@@ -101,16 +101,29 @@ fun Header(totalPerPerson: Double = 134.4) {
 @ExperimentalComposeUiApi
 @Composable
 fun MainContent() {
-    BillForm() { billAmount ->
-        Log.d("SPLITTRIP", "MainContent: $billAmount")
+    val splitByState = remember {
+        mutableStateOf(1)
     }
+    val tipAmountState = remember {
+        mutableStateOf(0.0)
+    }
+    val totalPerPersonState = remember {
+        mutableStateOf(0.0)
+    }
+    BillForm(
+        splitByState = splitByState,
+        tipAmountState = tipAmountState,
+        totalPerPersonState = totalPerPersonState
+    )
 }
 
-@Preview
 @ExperimentalComposeUiApi
 @Composable
 fun BillForm(
     modifier: Modifier = Modifier,
+    splitByState: MutableState<Int>,
+    tipAmountState: MutableState<Double>,
+    totalPerPersonState: MutableState<Double>,
     onValChange: (String) -> Unit = {}
 ) {
     val totalBillState = remember {
@@ -123,15 +136,7 @@ fun BillForm(
         mutableStateOf(0f)
     }
     val tipPercent = (sliderPositionState.value * 100).toInt()
-    val splitByState = remember {
-        mutableStateOf(1)
-    }
-    val tipAmountState = remember {
-        mutableStateOf(0.0)
-    }
-    val totalPerPersonState = remember {
-        mutableStateOf(0.0)
-    }
+
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
