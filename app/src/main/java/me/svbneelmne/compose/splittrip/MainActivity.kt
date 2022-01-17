@@ -10,12 +10,14 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Slider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -45,7 +47,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyApp {
                 Column {
-                    Header()
                     MainContent()
                 }
             }
@@ -68,6 +69,7 @@ fun Header(totalPerPerson: Double = 134.4) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(30.dp)
             .height(150.dp)
             .clip(shape = RoundedCornerShape(corner = CornerSize(12.dp))),
         //  .clip(shape = CircleShape.copy(app = CornerSize(12.dp)) can be used also
@@ -77,6 +79,7 @@ fun Header(totalPerPerson: Double = 134.4) {
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
             val total = "%.2f".format(totalPerPerson)
             Text(
@@ -86,14 +89,14 @@ fun Header(totalPerPerson: Double = 134.4) {
             Text(
                 text = "$INR_Symbol $total",
                 style = MaterialTheme.typography.h4,
-                fontWeight = FontWeight.ExtraBold
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White
             )
         }
     }
 }
 
 @ExperimentalComposeUiApi
-@Preview
 @Composable
 fun MainContent() {
     BillForm() { billAmount ->
@@ -101,6 +104,7 @@ fun MainContent() {
     }
 }
 
+@Preview
 @ExperimentalComposeUiApi
 @Composable
 fun BillForm(
@@ -113,10 +117,19 @@ fun BillForm(
     val validState = remember(totalBillState.value) {
         totalBillState.value.trim().isNotEmpty() && totalBillState.value.trim().isDigitsOnly()
     }
+    val sliderPositionState = remember {
+        mutableStateOf(0f)
+    }
+    val splitByState = remember {
+        mutableStateOf(1)
+    }
+
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    Header()
     Surface(
         modifier = modifier
-            .padding(2.dp)
+            .padding(top = 0.dp, end = 20.dp, start = 20.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(corner = CornerSize(8.dp)),
         border = BorderStroke(width = 1.dp, color = Color.LightGray)
@@ -136,40 +149,91 @@ fun BillForm(
                     keyboardController?.hide()
                 }
             )
-            if (validState) {
-                Row(
-                    modifier = modifier.padding(3.dp),
-                    horizontalArrangement = Arrangement.Start
+            if (validState || !validState) {
+                QuantitySelectionRow(modifier, splitByState)
+                // Tips Row
+                TipRow(modifier)
+                // % Row
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "Split",
-                        modifier = modifier.align(alignment = Alignment.CenterVertically)
-                    )
-                    Spacer(modifier = modifier.width(120.dp))
-                    Row(
-                        modifier = modifier.padding(horizontal = 3.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        RoundIconButton(
-                            imageVector = Icons.Default.Remove,
-                            onClick = {
-                                Log.d("IconClick", "Minus Clicked")
-                            }
-                        )
-                        RoundIconButton(
-                            imageVector = Icons.Default.Add,
-                            onClick = {
-                                Log.d("IconClick", "Plus Clicked")
+                    Text(text = "33%")
+                    Spacer(modifier = modifier.height(14.dp))
 
-                            }
-                        )
-                    }
+                    // Slider
+                    Slider(
+                        value = sliderPositionState.value, onValueChange = { newVal ->
+                            sliderPositionState.value = newVal
+                        },
+                        modifier = modifier.padding(start = 16.dp, end = 16.dp),
+                        steps = 5,
+                        onValueChangeFinished = {
+                            // TODO
+                        }
+                    )
                 }
             } else {
                 Box {}
             }
         }
 
+    }
+}
+
+@Composable
+private fun TipRow(modifier: Modifier) {
+    Row(
+        modifier = modifier.padding(horizontal = 3.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = "Tip Added",
+            modifier = modifier.align(alignment = Alignment.CenterVertically)
+        )
+        Spacer(modifier = modifier.width(200.dp))
+        Text(
+            text = "$INR_Symbol 33",
+            modifier = modifier.align(alignment = Alignment.CenterVertically)
+        )
+    }
+}
+
+@Composable
+private fun QuantitySelectionRow(modifier: Modifier, splitValue: MutableState<Int>) {
+    Row(
+        modifier = modifier.padding(3.dp),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Text(
+            text = "Split",
+            modifier = modifier.align(alignment = Alignment.CenterVertically)
+        )
+        Spacer(modifier = modifier.width(120.dp))
+        Row(
+            modifier = modifier.padding(horizontal = 3.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            RoundIconButton(
+                imageVector = Icons.Default.Remove,
+                onClick = {
+                    splitValue.value = if (splitValue.value > 1) splitValue.value - 1 else 1
+                }
+            )
+
+            Text(
+                text = "${splitValue.value}",
+                modifier = modifier
+                    .align(alignment = Alignment.CenterVertically)
+                    .padding(start = 9.dp, end = 9.dp)
+            )
+
+            RoundIconButton(
+                imageVector = Icons.Default.Add,
+                onClick = {
+                    splitValue.value = splitValue.value + 1
+                }
+            )
+        }
     }
 }
 
