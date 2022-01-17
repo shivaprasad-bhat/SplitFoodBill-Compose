@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.isDigitsOnly
 import me.svbneelmne.compose.splittrip.MainActivity.Companion.INR_Symbol
@@ -141,7 +142,7 @@ fun BillForm(
     Header(totalPerPersonState.value)
     Surface(
         modifier = modifier
-            .padding(top = 0.dp, end = 20.dp, start = 20.dp)
+            .padding(top = 0.dp, end = 20.dp, start = 20.dp, bottom = 20.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(corner = CornerSize(8.dp)),
         border = BorderStroke(width = 1.dp, color = Color.LightGray)
@@ -163,35 +164,18 @@ fun BillForm(
             )
             if (validState) {
                 QuantitySelectionRow(modifier, splitByState)
-                // Tips Row
-                TipRow(modifier, tipAmountState)
-                // % Row
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "$tipPercent %")
-                    Spacer(modifier = modifier.height(14.dp))
 
-                    // Slider
-                    Slider(
-                        value = sliderPositionState.value, onValueChange = { newVal ->
-                            sliderPositionState.value = newVal
-                            tipAmountState.value =
-                                calculateTotalTip(
-                                    totalBill = (totalBillState.value).toDouble(),
-                                    tipPercent
-                                )
-                            totalPerPersonState.value = calculateTotalPerPerson(
-                                totalBillState.value.toDouble(),
-                                splitByState.value,
-                                tipPercent
-                            )
-                        },
-                        modifier = modifier.padding(start = 16.dp, end = 16.dp),
-                        steps = 5
-                    )
-                }
+                SplitRow(modifier, tipAmountState)
+
+                TipSelectionRow(
+                    tipPercent,
+                    modifier,
+                    sliderPositionState,
+                    tipAmountState,
+                    totalBillState,
+                    totalPerPersonState,
+                    splitByState
+                )
             } else {
                 Box {}
             }
@@ -200,9 +184,47 @@ fun BillForm(
     }
 }
 
+@Composable
+private fun TipSelectionRow(
+    tipPercent: Int,
+    modifier: Modifier,
+    sliderPositionState: MutableState<Float>,
+    tipAmountState: MutableState<Double>,
+    totalBillState: MutableState<String>,
+    totalPerPersonState: MutableState<Double>,
+    splitByState: MutableState<Int>
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "$tipPercent %")
+        Spacer(modifier = modifier.height(14.dp))
+
+        // Slider
+        Slider(
+            value = sliderPositionState.value, onValueChange = { newVal ->
+                sliderPositionState.value = newVal
+                tipAmountState.value =
+                    calculateTotalTip(
+                        totalBill = (totalBillState.value).toDouble(),
+                        tipPercent
+                    )
+                totalPerPersonState.value = calculateTotalPerPerson(
+                    totalBillState.value.toDouble(),
+                    splitByState.value,
+                    tipPercent
+                )
+            },
+            modifier = modifier.padding(start = 16.dp, end = 16.dp),
+            steps = 5
+        )
+    }
+}
+
 
 @Composable
-private fun TipRow(modifier: Modifier, tipAmountState: MutableState<Double>) {
+private fun SplitRow(modifier: Modifier, tipAmountState: MutableState<Double>) {
     Row(
         modifier = modifier.padding(horizontal = 3.dp, vertical = 12.dp)
     ) {
@@ -257,10 +279,16 @@ private fun QuantitySelectionRow(modifier: Modifier, splitValue: MutableState<In
     }
 }
 
-//@Preview(showBackground = true)
+/**
+ * Default preview that will be loaded for Design
+ */
+@ExperimentalComposeUiApi
+@Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     MyApp {
-        Text(text = "Hello Again")
+        Column {
+            MainContent()
+        }
     }
 }

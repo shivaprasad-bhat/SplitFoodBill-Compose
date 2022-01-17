@@ -16,6 +16,11 @@ import androidx.compose.ui.unit.dp
 
 val IconButtonSizeModifier = Modifier.size(40.dp)
 
+/**
+ * Composable Card
+ * This composable component acts as a round button
+ * Which can be clicked & act as a button
+ */
 @Composable
 fun RoundIconButton(
     modifier: Modifier = Modifier,
