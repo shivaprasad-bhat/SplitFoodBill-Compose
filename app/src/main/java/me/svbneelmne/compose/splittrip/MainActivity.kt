@@ -120,9 +120,14 @@ fun BillForm(
     val sliderPositionState = remember {
         mutableStateOf(0f)
     }
+    val tipPercent = (sliderPositionState.value * 100).toInt()
     val splitByState = remember {
         mutableStateOf(1)
     }
+    val tipAmountState = remember {
+        mutableStateOf(0.0)
+    }
+
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -149,27 +154,32 @@ fun BillForm(
                     keyboardController?.hide()
                 }
             )
-            if (validState || !validState) {
+            if (validState) {
                 QuantitySelectionRow(modifier, splitByState)
                 // Tips Row
-                TipRow(modifier)
+                TipRow(modifier, tipAmountState)
                 // % Row
                 Column(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "33%")
+                    Text(text = "$tipPercent %")
                     Spacer(modifier = modifier.height(14.dp))
 
                     // Slider
                     Slider(
                         value = sliderPositionState.value, onValueChange = { newVal ->
                             sliderPositionState.value = newVal
+                            tipAmountState.value =
+                                calculateTotalTip(
+                                    totalBill = (totalBillState.value).toDouble(),
+                                    tipPercent
+                                )
                         },
                         modifier = modifier.padding(start = 16.dp, end = 16.dp),
                         steps = 5,
                         onValueChangeFinished = {
-                            // TODO
+                            // TODO("Implement later")
                         }
                     )
                 }
@@ -181,8 +191,18 @@ fun BillForm(
     }
 }
 
+fun calculateTotalTip(totalBill: Double, tipPercent: Int): Double {
+    return if (
+        totalBill > 1 && totalBill.toString().isNotEmpty()
+    ) {
+        (totalBill * tipPercent) / (100).toDouble()
+    } else {
+        0.0
+    }
+}
+
 @Composable
-private fun TipRow(modifier: Modifier) {
+private fun TipRow(modifier: Modifier, tipAmountState: MutableState<Double>) {
     Row(
         modifier = modifier.padding(horizontal = 3.dp, vertical = 12.dp)
     ) {
@@ -192,7 +212,7 @@ private fun TipRow(modifier: Modifier) {
         )
         Spacer(modifier = modifier.width(200.dp))
         Text(
-            text = "$INR_Symbol 33",
+            text = "$INR_Symbol ${tipAmountState.value}",
             modifier = modifier.align(alignment = Alignment.CenterVertically)
         )
     }
