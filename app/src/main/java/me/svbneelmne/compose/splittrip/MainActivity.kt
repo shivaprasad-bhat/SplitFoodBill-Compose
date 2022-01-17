@@ -33,6 +33,8 @@ import androidx.core.text.isDigitsOnly
 import me.svbneelmne.compose.splittrip.MainActivity.Companion.INR_Symbol
 import me.svbneelmne.compose.splittrip.components.InputField
 import me.svbneelmne.compose.splittrip.ui.theme.SplitTripTheme
+import me.svbneelmne.compose.splittrip.util.calculateTotalPerPerson
+import me.svbneelmne.compose.splittrip.util.calculateTotalTip
 import me.svbneelmne.compose.splittrip.widgets.RoundIconButton
 
 class MainActivity : ComponentActivity() {
@@ -127,11 +129,13 @@ fun BillForm(
     val tipAmountState = remember {
         mutableStateOf(0.0)
     }
-
+    val totalPerPersonState = remember {
+        mutableStateOf(0.0)
+    }
 
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    Header()
+    Header(totalPerPersonState.value)
     Surface(
         modifier = modifier
             .padding(top = 0.dp, end = 20.dp, start = 20.dp)
@@ -175,12 +179,14 @@ fun BillForm(
                                     totalBill = (totalBillState.value).toDouble(),
                                     tipPercent
                                 )
+                            totalPerPersonState.value = calculateTotalPerPerson(
+                                totalBillState.value.toDouble(),
+                                splitByState.value,
+                                tipPercent
+                            )
                         },
                         modifier = modifier.padding(start = 16.dp, end = 16.dp),
-                        steps = 5,
-                        onValueChangeFinished = {
-                            // TODO("Implement later")
-                        }
+                        steps = 5
                     )
                 }
             } else {
@@ -191,15 +197,6 @@ fun BillForm(
     }
 }
 
-fun calculateTotalTip(totalBill: Double, tipPercent: Int): Double {
-    return if (
-        totalBill > 1 && totalBill.toString().isNotEmpty()
-    ) {
-        (totalBill * tipPercent) / (100).toDouble()
-    } else {
-        0.0
-    }
-}
 
 @Composable
 private fun TipRow(modifier: Modifier, tipAmountState: MutableState<Double>) {
