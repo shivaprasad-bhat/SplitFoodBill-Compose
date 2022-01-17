@@ -9,4 +9,4 @@ This application is developed using Android's Jetpack Compose
 - Add your tip percentage
 
 # Screenshot
-![Screenshot](https://github.com/shivaprasad-bhat/SplitTrip-Compose/blob/master/screenshots/img.png)
+![Screenshot](https://github.com/shivaprasad-bhat/SplitTrip-Compose/blob/master/screenshots/img_1.png)
